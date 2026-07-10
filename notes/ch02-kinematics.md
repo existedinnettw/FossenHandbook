@@ -26,7 +26,11 @@ Superscripts describe the frame where a vector is expressed:
 The subscript $nb$ means "BODY with respect to NED":
 
 - $\omega_{nb}^b$: angular velocity of BODY relative to NED, expressed in BODY.
+  - rotational velocity of frame $\{b\}$ with respect to frame $\{n\}$.
+
 - $v_{nb}^b$: linear velocity of BODY origin relative to NED origin, expressed in BODY.
+  - translational velocity of the origin of $\{b\}$ with respect to the origin of $\{n\}$.
+
 - $\Theta_{nb}$: Euler attitude of BODY relative to NED.
 - $p_{nb}^n$: position from NED origin to BODY origin, expressed in NED.
 
@@ -77,6 +81,7 @@ $$
 
 #### NED: North-East-Down Frame `{n}`
 
+[wiki Local tangent plane coordinates](https://en.wikipedia.org/wiki/Local_tangent_plane_coordinates)
 $$
 \{n\} = (x_n, y_n, z_n)
 $$
@@ -157,10 +162,15 @@ where:
 
 Useful body-fixed reference points:
 
-- **CO**: coordinate origin.
-- **CF**: center of flotation, the centroid of the calm-water waterplane area $A_{wp}$.
+- **CO**: coordinate origin $o_b$ of the body-fixed frame $\{b\}$.
 
-For small-angle linear theory, the vessel rolls and pitches about CF.
+The following time-varying points are expressed with respect to the CO  
+
+- CG: center of gravity
+- CB: center of buoyancy
+  - The center of buoyancy is the exact center of the underwater volume of a boat. It is the single point where all the upward forces of water act.
+- **CF**: center of flotation, the centroid of the calm-water waterplane area $A_{wp}$.
+  - The center of flotation is the center of the **waterplane area**. For small-angle linear theory, it is the pivot point where the ship rolling and pitching.
 
 ## Rigid-Body Kinematics
 
@@ -210,15 +220,225 @@ $$
 
 ### Rotation Basics
 
-Euler's rotation theorem says that any rotation can be described by angle $\omega$ about a unit axis $\epsilon$:
+[Euler's rotation theorem](https://en.wikipedia.org/wiki/Euler%27s_rotation_theorem) says that any 3-D rotation can be described by one angle $\omega$ about one unit axis $\epsilon$:
+$$
+\epsilon =
+\begin{bmatrix}
+\epsilon_1 & \epsilon_2 & \epsilon_3
+\end{bmatrix}^T,
+\qquad
+\epsilon^T\epsilon = 1
+$$
+
+The axis $\epsilon$ is the line that stays fixed during the rotation. The angle $\omega$ is positive by the right-hand rule about that axis.
+
+The skew-symmetric matrix of the rotation axis is:
+
+$$
+S(\epsilon) =
+\begin{bmatrix}
+0 & -\epsilon_3 & \epsilon_2 \\
+\epsilon_3 & 0 & -\epsilon_1 \\
+-\epsilon_2 & \epsilon_1 & 0
+\end{bmatrix}
+$$
+
+so that $S(\epsilon)x = \epsilon \times x$ for any vector $x$. Its square is:
+
+$$
+S^2(\epsilon) =
+\begin{bmatrix}
+\epsilon_1^2-1 & \epsilon_1\epsilon_2 & \epsilon_1\epsilon_3 \\
+\epsilon_1\epsilon_2 & \epsilon_2^2-1 & \epsilon_2\epsilon_3 \\
+\epsilon_1\epsilon_3 & \epsilon_2\epsilon_3 & \epsilon_3^2-1
+\end{bmatrix}
+= \epsilon\epsilon^T - I_3
+$$
+
+because $\epsilon$ is a unit vector. This identity is useful because it shows the geometry:
+
+- $I_3$ keeps the original vector.
+- $\sin\omega S(\epsilon)$ rotates the component perpendicular to the axis by $90^\circ$ in the positive direction.
+- $(1-\cos\omega)S^2(\epsilon)$ corrects the perpendicular component so the final vector has the right angle $\omega$.
+
+For a vector $x$, Rodrigues' formula can also be read as:
+
+$$
+x' =
+x\cos\omega
++ (\epsilon \times x)\sin\omega
++ \epsilon(\epsilon^Tx)(1-\cos\omega)
+$$
+
+The last term preserves the component of $x$ parallel to the axis. If $x$ is exactly parallel to $\epsilon$, then $\epsilon \times x=0$ and the rotation does not change it.
+
+Rotation matrix
 
 $$
 R_{\omega,\epsilon}
-= I_3 + \sin(\omega)S(\epsilon)
-+ (1-\cos(\omega))S^2(\epsilon)
+= I_3 + \sin\omega S(\epsilon)
++ (1-\cos\omega)S^2(\epsilon)
 $$
 
-This is Rodrigues' rotation formula.
+This is [Rodrigues' rotation formula](https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula).
+
+Using $c=\cos\omega$, $s=\sin\omega$, and $\gamma=1-\cos\omega$, the full matrix is:
+
+$$
+R_{\omega,\epsilon} =
+\begin{bmatrix}
+c+\epsilon_1^2\gamma &
+\epsilon_1\epsilon_2\gamma-\epsilon_3s &
+\epsilon_1\epsilon_3\gamma+\epsilon_2s \\
+\epsilon_2\epsilon_1\gamma+\epsilon_3s &
+c+\epsilon_2^2\gamma &
+\epsilon_2\epsilon_3\gamma-\epsilon_1s \\
+\epsilon_3\epsilon_1\gamma-\epsilon_2s &
+\epsilon_3\epsilon_2\gamma+\epsilon_1s &
+c+\epsilon_3^2\gamma
+\end{bmatrix}
+$$
+
+This is the same object as the rotation matrices used later for BODY and NED frames. The notation changes depending on what the rotation maps:
+
+$$
+x^n = R_b^n x^b,
+\qquad
+x^b = R_n^b x^n = (R_b^n)^T x^n
+$$
+
+Here $R_b^n$ means "take the coordinates of a vector expressed in BODY and express the same physical vector in NED."
+
+
+
+#### Applying Rodrigues to BODY/NED Velocity
+
+If BODY is rotated from NED by angle $\omega$ about axis $\epsilon$, the BODY-to-NED rotation matrix can be written directly as:
+
+$$
+R_b^n = R_{\omega,\epsilon}
+$$
+
+Then the BODY velocity vector
+
+$$
+v_{nb}^b =
+\begin{bmatrix}
+u & v & w
+\end{bmatrix}^T
+$$
+
+is transformed to NED by:
+
+$$
+v_{nb}^n =
+\dot{p}_{nb}^n =
+R_b^n v_{nb}^b
+$$
+
+In full component form:
+
+$$
+\begin{bmatrix}
+\dot{x}^n \\
+\dot{y}^n \\
+\dot{z}^n
+\end{bmatrix}
+=
+\begin{bmatrix}
+c+\epsilon_1^2\gamma &
+\epsilon_1\epsilon_2\gamma-\epsilon_3s &
+\epsilon_1\epsilon_3\gamma+\epsilon_2s \\
+\epsilon_2\epsilon_1\gamma+\epsilon_3s &
+c+\epsilon_2^2\gamma &
+\epsilon_2\epsilon_3\gamma-\epsilon_1s \\
+\epsilon_3\epsilon_1\gamma-\epsilon_2s &
+\epsilon_3\epsilon_2\gamma+\epsilon_1s &
+c+\epsilon_3^2\gamma
+\end{bmatrix}
+\begin{bmatrix}
+u \\
+v \\
+w
+\end{bmatrix}
+$$
+
+Therefore:
+
+$$
+\dot{x}^n =
+(c+\epsilon_1^2\gamma)u
++(\epsilon_1\epsilon_2\gamma-\epsilon_3s)v
++(\epsilon_1\epsilon_3\gamma+\epsilon_2s)w
+$$
+
+$$
+\dot{y}^n =
+(\epsilon_2\epsilon_1\gamma+\epsilon_3s)u
++(c+\epsilon_2^2\gamma)v
++(\epsilon_2\epsilon_3\gamma-\epsilon_1s)w
+$$
+
+$$
+\dot{z}^n =
+(\epsilon_3\epsilon_1\gamma-\epsilon_2s)u
++(\epsilon_3\epsilon_2\gamma+\epsilon_1s)v
++(c+\epsilon_3^2\gamma)w
+$$
+
+The inverse direction uses the transpose:
+
+$$
+v_{nb}^b = R_n^b v_{nb}^n = (R_b^n)^T v_{nb}^n
+$$
+
+For a pure yaw rotation $\psi$ about the NED down axis,
+
+$$
+\epsilon =
+\begin{bmatrix}
+0 & 0 & 1
+\end{bmatrix}^T,
+\qquad
+\omega=\psi
+$$
+
+Rodrigues gives:
+
+$$
+R_b^n =
+\begin{bmatrix}
+\cos\psi & -\sin\psi & 0 \\
+\sin\psi & \cos\psi & 0 \\
+0 & 0 & 1
+\end{bmatrix}
+$$
+
+and:
+
+$$
+\begin{bmatrix}
+\dot{x}^n \\
+\dot{y}^n \\
+\dot{z}^n
+\end{bmatrix}
+=
+\begin{bmatrix}
+u\cos\psi - v\sin\psi \\
+u\sin\psi + v\cos\psi \\
+w
+\end{bmatrix}
+$$
+
+So if the craft has only surge velocity $u>0$, its NED velocity points along the heading direction:
+
+$$
+\dot{x}^n = u\cos\psi,
+\qquad
+\dot{y}^n = u\sin\psi
+$$
+
+
 
 ### Euler-Angle Attitude Representation
 
@@ -228,7 +448,7 @@ Marine craft and aircraft usually use the Tait-Bryan ZYX sequence:
 2. Pitch $\theta$ about $y$.
 3. Roll $\phi$ about $x$.
 
-The Euler angle vector is:
+The Euler angle vector (attitude) is:
 
 $$
 \Theta_{nb} =
@@ -249,7 +469,7 @@ $$
 (R_b^n)^{-1} = R_n^b = (R_b^n)^T
 $$
 
-Using $c(\cdot)=\cos(\cdot)$ and $s(\cdot)=\sin(\cdot)$:
+Using $c(\cdot)=\cos(\cdot)$, $s(\cdot)=\sin(\cdot)$, and $t(\cdot)=\tan(\cdot)$:
 
 $$
 R_b^n =
@@ -264,6 +484,62 @@ c\psi c\phi + s\phi s\theta s\psi &
 c\theta s\phi &
 c\theta c\phi
 \end{bmatrix}
+$$
+
+Linear velocity transformation from BODY to NED:
+
+$$
+\begin{bmatrix}
+\dot{x}^n \\
+\dot{y}^n \\
+\dot{z}^n
+\end{bmatrix}
+=
+R_b^n
+\begin{bmatrix}
+u \\
+v \\
+w
+\end{bmatrix}
+$$
+
+or, term by term:
+
+$$
+\dot{x}^n =
+c\psi c\theta u
++(-s\psi c\phi + c\psi s\theta s\phi)v
++(s\psi s\phi + c\psi c\phi s\theta)w
+$$
+
+$$
+\dot{y}^n =
+s\psi c\theta u
++(c\psi c\phi + s\phi s\theta s\psi)v
++(-c\psi s\phi + s\theta s\psi c\phi)w
+$$
+
+$$
+\dot{z}^n =
+-s\theta u
++c\theta s\phi v
++c\theta c\phi w
+$$
+
+The inverse linear velocity transformation is:
+
+$$
+v_{nb}^b =
+\begin{bmatrix}
+u & v & w
+\end{bmatrix}^T
+=
+R_n^b\dot{p}_{nb}^n
+=
+(R_b^n)^T
+\begin{bmatrix}
+\dot{x}^n & \dot{y}^n & \dot{z}^n
+\end{bmatrix}^T
 $$
 
 Small-angle approximation:
@@ -306,23 +582,105 @@ T_\Theta^{-1}(\Theta_{nb}) =
 \end{bmatrix}
 $$
 
+Therefore the Euler-angle rate equations are:
+
+$$
+\dot{\phi} = p + s\phi t\theta q + c\phi t\theta r
+$$
+
+$$
+\dot{\theta} = c\phi q - s\phi r
+$$
+
+$$
+\dot{\psi} = \frac{s\phi}{c\theta}q + \frac{c\phi}{c\theta}r
+$$
+
+Putting the linear and angular parts together gives the 6-DOF kinematic equations:
+
+$$
+\begin{bmatrix}
+\dot{x}^n \\
+\dot{y}^n \\
+\dot{z}^n \\
+\dot{\phi} \\
+\dot{\theta} \\
+\dot{\psi}
+\end{bmatrix}
+=
+\begin{bmatrix}
+c\psi c\theta u
++(-s\psi c\phi + c\psi s\theta s\phi)v
++(s\psi s\phi + c\psi c\phi s\theta)w \\
+s\psi c\theta u
++(c\psi c\phi + s\phi s\theta s\psi)v
++(-c\psi s\phi + s\theta s\psi c\phi)w \\
+-s\theta u
++c\theta s\phi v
++c\theta c\phi w \\
+p + s\phi t\theta q + c\phi t\theta r \\
+c\phi q - s\phi r \\
+\dfrac{s\phi}{c\theta}q + \dfrac{c\phi}{c\theta}r
+\end{bmatrix}
+$$
+
 Euler angles are intuitive but singular at:
 
 $$
 \theta = \pm 90^\circ
 $$
 
-Discrete position update with sampling time $h$:
+For sampled simulation or digital control, the continuous-time kinematics can be discretized with sampling time $h$. A simple forward-Euler update is:
+
+$$
+\eta[k+1] =
+\eta[k] + hJ(\eta[k])\nu[k]
+$$
+
+This means the rotation matrices are evaluated at the current attitude $\Theta_{nb}[k]=[\phi[k],\theta[k],\psi[k]]^T$, and the BODY velocity is assumed approximately constant over the interval $[kh,(k+1)h)$.
+
+The position part is:
 
 $$
 p_{nb}^n[k+1] = p_{nb}^n[k] + hR_b^n[k]v_{nb}^b[k]
 $$
 
-The slides recommend higher-order integration, such as RK4, for better numerical behavior.
+or:
+
+$$
+\begin{bmatrix}
+x^n[k+1] \\
+y^n[k+1] \\
+z^n[k+1]
+\end{bmatrix}
+=
+\begin{bmatrix}
+x^n[k] \\
+y^n[k] \\
+z^n[k]
+\end{bmatrix}
++ h
+\begin{bmatrix}
+\dot{x}^n[k] \\
+\dot{y}^n[k] \\
+\dot{z}^n[k]
+\end{bmatrix}
+$$
+
+The attitude part is:
+
+$$
+\Theta_{nb}[k+1] =
+\Theta_{nb}[k] + hT_\Theta(\Theta_{nb}[k])\omega_{nb}^b[k]
+$$
+
+Forward Euler is easy to read but can accumulate attitude and position error when $h$ is large or the craft rotates quickly. The slides recommend higher-order integration, such as RK4 (`rk45`, `ode45`), for better numerical behavior.
+
+
 
 ### Quaternion Attitude Representation
 
-Unit quaternions avoid Euler-angle singularity by using four parameters:
+Unit [quaternions](https://en.wikipedia.org/wiki/Quaternion) avoid Euler-angle singularity by using four parameters:
 
 $$
 q =
@@ -349,10 +707,39 @@ $$
 \epsilon = \lambda \sin \frac{\beta}{2}
 $$
 
-The quaternion rotation matrix is:
+The [quaternion rotation matrix](https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation#Quaternion-derived_rotation_matrix) is:
 
 $$
 R(q_b^n) = I_3 + 2\eta S(\epsilon) + 2S^2(\epsilon)
+$$
+
+Here $S(\epsilon)$ is the skew-symmetric matrix built from the vector part of the quaternion:
+
+$$
+S(\epsilon) =
+\begin{bmatrix}
+0 & -\epsilon_3 & \epsilon_2 \\
+\epsilon_3 & 0 & -\epsilon_1 \\
+-\epsilon_2 & \epsilon_1 & 0
+\end{bmatrix}
+$$
+
+It is a matrix way to write a cross product:
+
+$$
+S(\epsilon)x = \epsilon \times x
+$$
+
+In the quaternion section, $\epsilon$ is not the unit rotation axis itself. The axis is $\lambda$, while:
+
+$$
+\epsilon = \lambda \sin \frac{\beta}{2}
+$$
+
+so $\epsilon$ is the axis scaled by the half-angle sine. Also, $S^2(\epsilon)$ means:
+
+$$
+S^2(\epsilon) = S(\epsilon)S(\epsilon)
 $$
 
 or:
@@ -378,13 +765,55 @@ $$
 \dot{p}_{nb}^n = R(q_b^n)v_{nb}^b
 $$
 
-Quaternion rate:
 
+
+Quaternion rate:
 $$
 \dot{q}_b^n = T(q_b^n)\omega_{nb}^b
 $$
 
-where
+Here $T(q_b^n)$ is kinematic transformation from BODY angular velocity to quaternion rate:
+
+$$
+\omega_{nb}^b =
+\begin{bmatrix}
+p & q & r
+\end{bmatrix}^T
+\quad \Longrightarrow \quad
+\dot{q}_b^n =
+\begin{bmatrix}
+\dot{\eta} & \dot{\epsilon}_1 & \dot{\epsilon}_2 & \dot{\epsilon}_3
+\end{bmatrix}^T
+$$
+
+The angular velocity has three components, but the quaternion has four components. Therefore $T(q_b^n)$ is a $4 \times 3$ matrix. It tells how the four quaternion parameters must change when the craft rotates with BODY angular velocity $\omega_{nb}^b$.
+
+This comes from writing angular velocity as a pure quaternion:
+
+$$
+\omega_q =
+\begin{bmatrix}
+0 & \omega^b_{nb}
+\end{bmatrix}^T
+=
+\begin{bmatrix}
+0 & p & q & r
+\end{bmatrix}^T
+$$
+
+and using the quaternion differential equation:
+
+> [Rotation Quaternions, and How to Use Them](https://danceswithcode.net/engineeringnotes/quaternions/quaternions.html)
+
+$$
+\dot{q}_b^n = \frac{1}{2} q_b^n \otimes \omega_q
+$$
+
+* \(\otimes \): [Quaternion multiplication](https://www.mathworks.com/help/aeroblks/quaternionmultiplication.html)
+
+Expanding this quaternion product gives the matrix $T(q_b^n)$ below.
+
+The matrix is:
 
 $$
 T(q_b^n) =
@@ -429,6 +858,8 @@ $$
 This is nonsingular, but one extra ODE is needed and the unit constraint must be preserved.
 
 ### Euler-Quaternion Conversion
+
+[Conversion between quaternions and Euler angles](https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles)
 
 For $\Theta_{nb}=[\phi,\theta,\psi]^T$:
 
