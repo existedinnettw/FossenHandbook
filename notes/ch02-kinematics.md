@@ -923,7 +923,7 @@ $$
 
 ### Global Navigation Coordinates
 
-ECEF coordinates are useful for satellite navigation, but operators usually need:
+ECEF coordinates are useful for satellite navigation and global maps, but operators usually need:
 
 - longitude $l$,
 - latitude $\mu$,
@@ -1027,9 +1027,153 @@ z^e
 \end{bmatrix}
 $$
 
+### Transformation Between ECEF and NED
+
+The NED frame is the local tangent frame attached to a longitude-latitude point. It is not a new position system by itself; it is a local way to express vectors near a chosen reference point.
+
+Let the NED origin be located at geodetic coordinates:
+
+$$
+(l_0,\mu_0,h_0)
+$$
+
+and let its ECEF position be:
+
+$$
+p_{en}^e =
+\begin{bmatrix}
+x_n^e & y_n^e & z_n^e
+\end{bmatrix}^T
+$$
+
+where the subscript $en$ means "NED origin with respect to ECEF origin." The BODY or vehicle position in ECEF is:
+
+$$
+p_{eb}^e =
+\begin{bmatrix}
+x_b^e & y_b^e & z_b^e
+\end{bmatrix}^T
+$$
+
+The displacement from the local NED origin to the vehicle, still expressed in ECEF, is:
+
+$$
+p_{nb}^e = p_{eb}^e - p_{en}^e
+$$
+
+To express that same displacement in NED, rotate it with $R_e^n$:
+
+$$
+p_{nb}^n = R_e^n(l_0,\mu_0)\left(p_{eb}^e-p_{en}^e\right)
+$$
+
+where:
+
+$$
+R_e^n(l,\mu) =
+\begin{bmatrix}
+-\sin\mu\cos l & -\sin\mu\sin l & \cos\mu \\
+-\sin l & \cos l & 0 \\
+-\cos\mu\cos l & -\cos\mu\sin l & -\sin\mu
+\end{bmatrix}
+$$
+
+The rows of $R_e^n$ are the local North, East, and Down unit vectors expressed in ECEF coordinates:
+
+$$
+\hat{n}^e =
+\begin{bmatrix}
+-\sin\mu\cos l & -\sin\mu\sin l & \cos\mu
+\end{bmatrix}
+$$
+
+$$
+\hat{e}^e =
+\begin{bmatrix}
+-\sin l & \cos l & 0
+\end{bmatrix}
+$$
+
+$$
+\hat{d}^e =
+\begin{bmatrix}
+-\cos\mu\cos l & -\cos\mu\sin l & -\sin\mu
+\end{bmatrix}
+$$
+
+The inverse transformation uses the transpose:
+
+$$
+R_n^e(l,\mu) = (R_e^n(l,\mu))^T
+$$
+
+so:
+
+$$
+p_{eb}^e = p_{en}^e + R_n^e(l_0,\mu_0)p_{nb}^n
+$$
+
+In full matrix form:
+
+$$
+R_n^e(l,\mu) =
+\begin{bmatrix}
+-\sin\mu\cos l & -\sin l & -\cos\mu\cos l \\
+-\sin\mu\sin l & \cos l & -\cos\mu\sin l \\
+\cos\mu & 0 & -\sin\mu
+\end{bmatrix}
+$$
+
+A useful sign check is the equator at the prime meridian:
+
+$$
+l=0,\qquad \mu=0
+$$
+
+At this point:
+
+- North points along $+z_e$.
+- East points along $+y_e$.
+- Down points toward Earth's center, along $-x_e$.
+
+Therefore:
+
+$$
+R_n^e(0,0) =
+\begin{bmatrix}
+0 & 0 & -1 \\
+0 & 1 & 0 \\
+1 & 0 & 0
+\end{bmatrix}
+$$
+
+whose columns are exactly the ECEF coordinates of the North, East, and Down axes.
+
+For attitude transformations, the same rotation composes with the vehicle attitude:
+
+$$
+R_b^n = R_e^n R_b^e
+$$
+
+and:
+
+$$
+R_b^e = R_n^e R_b^n
+$$
+
+This is the coordinate-frame version of the rule used earlier: adjacent superscript/subscript frames cancel in the middle. For example, $R_e^nR_b^e$ maps BODY coordinates to ECEF and then ECEF coordinates to NED, so the result maps BODY directly to NED.
+
+For local navigation, $l_0$ and $\mu_0$ are fixed constants. For terrestrial navigation over larger distances, the local NED frame follows the vehicle, so $R_e^n(l,\mu)$ changes as longitude and latitude change.
+
 ### Local Flat-Earth Coordinates
 
-For local navigation, choose a fixed NED tangent-plane origin $(l_0,\mu_0)$ with reference height $h_{ref}$.
+For small operating areas, the ECEF-to-NED transformation can be approximated by local flat-Earth coordinates. Choose a fixed NED tangent-plane origin $(l_0,\mu_0)$ with reference height $h_{ref}$.
+
+The idea is to replace the curved ellipsoid by a tangent plane:
+
+- changes in latitude become North displacement,
+- changes in longitude become East displacement,
+- changes in height become negative Down displacement.
 
 Curvature radii:
 
