@@ -220,7 +220,7 @@ $$
 
 ### Rotation Basics
 
-[Euler's rotation theorem](https://en.wikipedia.org/wiki/Euler%27s_rotation_theorem) says that any 3-D rotation can be described by one angle $\omega$ about one unit axis $\epsilon$:
+[Euler's rotation theorem](https://en.wikipedia.org/wiki/Euler%27s_rotation_theorem) says that any 3-D rotation can be described by one angle $\omega$ about one unit axis $\epsilon$ (so called [Axis–angle representation](https://en.wikipedia.org/wiki/Axis–angle_representation)):
 $$
 \epsilon =
 \begin{bmatrix}
@@ -596,7 +596,7 @@ $$
 \dot{\psi} = \frac{s\phi}{c\theta}q + \frac{c\phi}{c\theta}r
 $$
 
-Putting the linear and angular parts together gives the 6-DOF kinematic equations:
+Putting the linear and angular parts together gives the **6-DOF kinematic equations**:
 
 $$
 \begin{bmatrix}
@@ -947,8 +947,23 @@ $$
 e = \sqrt{1-\left(\frac{r_p}{r_e}\right)^2} \approx 0.0818
 $$
 
-Prime vertical radius of curvature:
+Parameter meanings:
 
+- $r_e$: Earth's equatorial radius, also called the semi-major axis $a$ of the WGS-84 ellipsoid.
+- $r_p$: Earth's polar radius, also called the semi-minor axis $b$.
+- $\omega_e$: Earth's rotation rate relative to an inertial frame.
+- $e$: first [eccentricity](https://en.wikipedia.org/wiki/Eccentricity_(mathematics)) of the ellipsoid. It measures how far WGS-84 is from a sphere.
+- $l$: longitude, positive east from the Greenwich meridian.
+- $\mu$: geodetic latitude, measured from the equatorial plane to the ellipsoid normal. This is not exactly the same as geocentric latitude.
+- $h$: ellipsoidal height, positive outward along the ellipsoid normal.
+
+The flattening can also be written as:
+
+$$
+f = \frac{r_e-r_p}{r_e}
+$$
+
+[Prime vertical](https://en.wikipedia.org/wiki/Earth_radius#Prime_vertical) radius of curvature:
 $$
 N =
 \frac{r_e^2}
@@ -957,7 +972,7 @@ $$
 
 ### ECEF and Geodetic Conversion
 
-Given:
+Given the vehicle or BODY-origin position vector expressed in ECEF:
 
 $$
 p_{eb}^e =
@@ -966,6 +981,13 @@ x^e & y^e & z^e
 \end{bmatrix}^T
 $$
 
+Here:
+
+- $p$: position vector.
+- subscript $eb$: BODY origin $b$ with respect to ECEF origin $e$.
+- superscript $e$: vector components are expressed in the ECEF frame.
+- $x^e,y^e,z^e$: ECEF Cartesian coordinates in meters.
+
 Longitude:
 
 $$
@@ -973,6 +995,12 @@ l = \operatorname{atan2}(y^e,x^e)
 $$
 
 Let:
+
+$$
+p = \sqrt{(x^e)^2 + (y^e)^2}
+$$
+
+Here $p$ is a scalar distance, not the position vector $p_{eb}^e$. It is the distance from the ECEF $z_e$ axis to the point projected onto the equatorial plane:
 
 $$
 p = \sqrt{(x^e)^2 + (y^e)^2}
@@ -993,11 +1021,13 @@ N =
 {\sqrt{r_e^2\cos^2\mu_0 + r_p^2\sin^2\mu_0}}
 $$
 
-Height:
+Approximate height:
 
 $$
 h = \frac{p}{\cos\mu_0} - N
 $$
+
+This is not the final exact height. It is the height estimate that corresponds to the current latitude estimate $\mu_0$ and curvature radius $N$. The algorithm then uses this $h$ to improve the latitude estimate, recomputes $N$ and $h$, and repeats until the change in latitude is small.
 
 Improved latitude:
 
@@ -1029,91 +1059,38 @@ $$
 
 ### Transformation Between ECEF and NED
 
-The NED frame is the local tangent frame attached to a longitude-latitude point. It is not a new position system by itself; it is a local way to express vectors near a chosen reference point.
+The NED frame is the local tangent frame attached to a longitude-latitude point. Its orientation relative to ECEF is set by two angles:
 
-Let the NED origin be located at geodetic coordinates:
+- longitude $l$: where the tangent point is around Earth's rotation axis,
+- latitude $\mu$: how far the tangent point is tilted away from the equator.
 
-$$
-(l_0,\mu_0,h_0)
-$$
-
-and let its ECEF position be:
+The slide form expresses the NED-to-ECEF rotation as two principal rotations:
 
 $$
-p_{en}^e =
-\begin{bmatrix}
-x_n^e & y_n^e & z_n^e
-\end{bmatrix}^T
+R_n^e(l,\mu) = R_{z,l}R_{y,-\mu-\pi/2}
 $$
 
-where the subscript $en$ means "NED origin with respect to ECEF origin." The BODY or vehicle position in ECEF is:
+This maps vector components from NED to ECEF:
 
 $$
-p_{eb}^e =
-\begin{bmatrix}
-x_b^e & y_b^e & z_b^e
-\end{bmatrix}^T
+x^e = R_n^e(l,\mu)x^n
 $$
 
-The displacement from the local NED origin to the vehicle, still expressed in ECEF, is:
+The first rotation, $R_{z,l}$, rotates around the ECEF $z_e$ axis to the correct longitude. The second rotation, $R_{y,-\mu-\pi/2}$, tilts the NED frame to the correct latitude.
+
+The $-\pi/2$ term is the part that often feels mysterious. It is the baseline rotation needed even at zero latitude. At the equator and prime meridian, the local NED axes are:
 
 $$
-p_{nb}^e = p_{eb}^e - p_{en}^e
+x_n \rightarrow +z_e,
+\qquad
+y_n \rightarrow +y_e,
+\qquad
+z_n \rightarrow -x_e
 $$
 
-To express that same displacement in NED, rotate it with $R_e^n$:
+So the NED frame is already rotated by $-\pi/2$ about the local/ECEF $y$ axis before any latitude is added. The extra $-\mu$ then tilts this baseline alignment from the equator to latitude $\mu$. The sign is negative because the right-hand positive rotation about $+y$ would move $x_n$ toward $-z_e$, while NED-to-ECEF needs the opposite direction under this convention.
 
-$$
-p_{nb}^n = R_e^n(l_0,\mu_0)\left(p_{eb}^e-p_{en}^e\right)
-$$
-
-where:
-
-$$
-R_e^n(l,\mu) =
-\begin{bmatrix}
--\sin\mu\cos l & -\sin\mu\sin l & \cos\mu \\
--\sin l & \cos l & 0 \\
--\cos\mu\cos l & -\cos\mu\sin l & -\sin\mu
-\end{bmatrix}
-$$
-
-The rows of $R_e^n$ are the local North, East, and Down unit vectors expressed in ECEF coordinates:
-
-$$
-\hat{n}^e =
-\begin{bmatrix}
--\sin\mu\cos l & -\sin\mu\sin l & \cos\mu
-\end{bmatrix}
-$$
-
-$$
-\hat{e}^e =
-\begin{bmatrix}
--\sin l & \cos l & 0
-\end{bmatrix}
-$$
-
-$$
-\hat{d}^e =
-\begin{bmatrix}
--\cos\mu\cos l & -\cos\mu\sin l & -\sin\mu
-\end{bmatrix}
-$$
-
-The inverse transformation uses the transpose:
-
-$$
-R_n^e(l,\mu) = (R_e^n(l,\mu))^T
-$$
-
-so:
-
-$$
-p_{eb}^e = p_{en}^e + R_n^e(l_0,\mu_0)p_{nb}^n
-$$
-
-In full matrix form:
+Expanding the product gives:
 
 $$
 R_n^e(l,\mu) =
@@ -1149,6 +1126,90 @@ $$
 
 whose columns are exactly the ECEF coordinates of the North, East, and Down axes.
 
+The ECEF-to-NED rotation is the transpose:
+
+$$
+R_e^n(l,\mu) = (R_n^e(l,\mu))^T
+$$
+
+so:
+
+$$
+x^n = R_e^n(l,\mu)x^e
+$$
+
+In full matrix form:
+
+$$
+R_e^n(l,\mu) =
+\begin{bmatrix}
+-\sin\mu\cos l & -\sin\mu\sin l & \cos\mu \\
+-\sin l & \cos l & 0 \\
+-\cos\mu\cos l & -\cos\mu\sin l & -\sin\mu
+\end{bmatrix}
+$$
+
+The rows of $R_e^n$ are the local North, East, and Down unit vectors expressed in ECEF coordinates:
+
+$$
+\hat{n}^e =
+\begin{bmatrix}
+-\sin\mu\cos l & -\sin\mu\sin l & \cos\mu
+\end{bmatrix}
+$$
+
+$$
+\hat{e}^e =
+\begin{bmatrix}
+-\sin l & \cos l & 0
+\end{bmatrix}
+$$
+
+$$
+\hat{d}^e =
+\begin{bmatrix}
+-\cos\mu\cos l & -\cos\mu\sin l & -\sin\mu
+\end{bmatrix}
+$$
+
+To use these rotations for position, first choose a local NED origin at geodetic coordinates:
+
+$$
+(l_0,\mu_0,h_0)
+$$
+
+and compute its ECEF position:
+
+$$
+p_{en}^e =
+\begin{bmatrix}
+x_n^e & y_n^e & z_n^e
+\end{bmatrix}^T
+$$
+
+where the subscript $en$ means "NED origin with respect to ECEF origin." If the vehicle position in ECEF is:
+
+$$
+p_{eb}^e =
+\begin{bmatrix}
+x_b^e & y_b^e & z_b^e
+\end{bmatrix}^T
+$$
+
+then the relative position from the NED origin to the vehicle is found by subtracting the origins first, then rotating:
+
+$$
+p_{nb}^n =
+R_e^n(l_0,\mu_0)
+\left(p_{eb}^e-p_{en}^e\right)
+$$
+
+The inverse position transformation is:
+
+$$
+p_{eb}^e = p_{en}^e + R_n^e(l_0,\mu_0)p_{nb}^n
+$$
+
 For attitude transformations, the same rotation composes with the vehicle attitude:
 
 $$
@@ -1165,7 +1226,11 @@ This is the coordinate-frame version of the rule used earlier: adjacent superscr
 
 For local navigation, $l_0$ and $\mu_0$ are fixed constants. For terrestrial navigation over larger distances, the local NED frame follows the vehicle, so $R_e^n(l,\mu)$ changes as longitude and latitude change.
 
+
+
 ### Local Flat-Earth Coordinates
+
+> ch2.4
 
 For small operating areas, the ECEF-to-NED transformation can be approximated by local flat-Earth coordinates. Choose a fixed NED tangent-plane origin $(l_0,\mu_0)$ with reference height $h_{ref}$.
 
