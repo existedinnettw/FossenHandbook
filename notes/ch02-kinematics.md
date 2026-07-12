@@ -1315,6 +1315,11 @@ $$
 \dot{y}^n = u\sin\psi + v\cos\psi
 $$
 
+Here $u$ and $v$ are BODY-frame horizontal velocity components:
+
+- $u$: surge velocity, positive forward along the BODY $x_b$ axis.
+- $v$: sway velocity, positive sideways along the BODY $y_b$ axis.
+
 The key relationship is:
 
 $$
@@ -1325,7 +1330,13 @@ where:
 
 - $\chi$: course angle, the direction the vehicle is moving.
 - $\psi$: heading/yaw angle, the direction the bow or $x_b$ axis points.
-- $\beta_c$: horizontal crab angle.
+- $\beta_c$: horizontal crab angle, the angle from heading to course.
+
+Term meaning:
+
+- Course $\chi$ is the direction of the horizontal velocity vector in NED.
+- Heading $\psi$ is the direction of the BODY $x_b$ axis in NED.
+- Crab $\beta_c$ is nonzero when the vehicle moves sideways relative to where it points.
 
 Horizontal speed:
 
@@ -1334,6 +1345,12 @@ U = \sqrt{u^2+v^2}
 $$
 
 Horizontal crab angle:
+
+$$
+\beta_c = \operatorname{atan2}(v,u)
+$$
+
+Equivalently, for $U>0$ and the usual range $|\beta_c|\le \pi/2$:
 
 $$
 \beta_c = \sin^{-1}\left(\frac{v}{U}\right)
@@ -1357,7 +1374,7 @@ Interpretation:
 
 ### Relative Velocity, AOA, and Sideslip
 
-For ocean current:
+For ocean current, subtract the current velocity components from the BODY-frame vehicle velocity components:
 
 $$
 u_r = u-u_c,
@@ -1366,6 +1383,20 @@ v_r = v-v_c,
 \qquad
 w_r = w-w_c
 $$
+
+where:
+
+- $u,v,w$: vehicle velocity components in BODY axes: surge, sway, and heave.
+- $u_c,v_c,w_c$: current velocity components resolved in the same BODY axes.
+- $u_r,v_r,w_r$: relative velocity components of the craft through the surrounding water.
+
+Term meaning:
+
+- $u_r$: relative surge velocity, forward velocity through the water.
+- $v_r$: relative sway velocity, sideways velocity through the water.
+- $w_r$: relative heave velocity, vertical velocity through the water.
+- $U_r$: total speed through the water.
+- $U_c$: current speed magnitude.
 
 Relative speed:
 
@@ -1385,7 +1416,7 @@ $$
 \alpha = \operatorname{atan2}(w_r,u_r)
 $$
 
-Sideslip:
+Sideslip angle:
 
 $$
 \beta = \sin^{-1}\left(\frac{v_r}{U_r}\right)
@@ -1399,20 +1430,66 @@ Horizontal crab and sideslip are different:
 They are equal only when there is no external horizontal flow:
 
 $$
-u_f = v_f = 0
+u_c = v_c = 0
 $$
 
 ### 3-D Amplitude-Phase Velocity
 
 The NED velocity can be described by speed $U$, course angle $\chi$, and flight-path angle $\gamma$:
 
+Here $U$ is the total 3-D speed, that is, the magnitude of the NED velocity vector:
+
+$$
+U = \sqrt{(\dot{x}^n)^2+(\dot{y}^n)^2+(\dot{z}^n)^2}
+$$
+
+If a velocity-aligned frame is used, the same velocity vector has components:
+
+$$
+\begin{bmatrix}
+U & 0 & 0
+\end{bmatrix}^T
+$$
+
+This means the velocity is entirely along the forward axis of that frame; the lateral and vertical components are zero because the frame has been rotated to point along the velocity vector.
+
 $$
 \chi = \operatorname{atan2}(\dot{y}^n,\dot{x}^n)
 $$
 
+The flight-path angle $\gamma$ is the vertical angle of the velocity vector relative to the local horizontal plane. Since NED uses $z^n$ positive downward, upward motion has $\dot{z}^n<0$ and therefore positive $\gamma$.
+
 $$
 \gamma = \sin^{-1}\left(\frac{-\dot{z}^n}{U}\right)
 $$
+
+Interpretation:
+
+- $\gamma>0$: climbing or moving upward.
+- $\gamma=0$: horizontal motion.
+- $\gamma<0$: diving or moving downward.
+- $\chi$: horizontal direction of motion.
+- $\gamma$: up/down inclination of motion.
+
+Horizontal and vertical crab angles compare the vehicle attitude direction with the velocity direction:
+
+$$
+\beta_c = \chi-\psi
+$$
+
+$$
+\alpha_c = \theta-\gamma
+$$
+
+where:
+
+- $\beta_c$: horizontal crab angle, the difference between course $\chi$ and heading $\psi$.
+- $\alpha_c$: vertical crab angle, the difference between pitch $\theta$ and flight-path angle $\gamma$.
+- $\alpha_c>0$: the bow is pitched above the velocity direction.
+- $\alpha_c=0$: pitch direction and flight-path direction match vertically.
+- $\alpha_c<0$: the bow is pitched below the velocity direction.
+
+So horizontal crab says "where the craft moves sideways relative to heading"; vertical crab says "where the craft moves upward/downward relative to pitch."
 
 Horizontal speed:
 
@@ -1423,7 +1500,9 @@ $$
 Velocity in NED:
 
 $$
-\dot{p}^n =
+\dot{p}^n = \mathbf R_z(\chi) \mathbf R_y(\gamma) \begin{bmatrix}
+U \\ 0 \\ 0
+\end{bmatrix} \\ =
 U
 \begin{bmatrix}
 \cos\gamma\cos\chi \\
@@ -1450,6 +1529,8 @@ $$
 \qquad
 \gamma = \theta-\alpha_c
 $$
+
+That is, course equals heading plus horizontal crab, and flight-path angle equals pitch minus vertical crab.
 
 ### BODY to FLOW Transformation
 
