@@ -119,205 +119,268 @@ $$
 
 ### Assumptions
 
-The chapter starts from two standard marine-craft assumptions:
+The CG derivation starts from two standard marine-craft assumptions:
 
 1. The vessel is rigid.
 2. **The local NED frame is approximately inertial**, $\{n\} \approx \{i\}$.
 
-The second assumption **ignores small inertial effects due to Earth rotation**. Earth rotates at
+The first assumption lets the craft be treated as one rigid body instead of as
+many mass elements interacting internally. Internal forces cancel when summing
+over the whole body, so only the resultant external force and moment appear.
+
+The second assumption means that, for ordinary marine craft modeling, the
+star-fixed inertial frame $\{i\}$ can be replaced by the local NED frame
+$\{n\}$. Therefore,
+
+$$
+v_{ig} \approx v_{ng},
+\qquad
+\omega_{ig} = \omega_{ib} \approx \omega_{nb}
+$$
+
+The approximation neglects small inertial effects from Earth's rotation,
 
 $$
 \omega_{ie} = 7.2921 \times 10^{-5}\ \mathrm{rad/s}
 $$
 
 which is usually small compared with marine hydrodynamic effects.
+
+### Vector Differentiation Rule
+
+The proof depends on distinguishing the vector itself from the coordinates used
+to represent it.
+
+- A coordinate-free vector, such as $\vec v_{ng}$, has a physical magnitude and direction.
+- A coordinate vector, such as $v_{ng}^b$, is the component representation in a chosen frame.
+
+For any vector $\vec a$, inertial differentiation and BODY differentiation are
+related by the transport theorem
+
 $$
-\vec v_{ig}\approx \vec v_{ng} \\
-\vec \omega_{ig}= \vec \omega_{ib} \approx \vec \omega_{nb}
+\left(\frac{d\vec a}{dt}\right)_n
+=
+\left(\frac{d\vec a}{dt}\right)_b
++ \vec\omega_{nb} \times \vec a
 $$
 
+In BODY coordinates this becomes
+
+$$
+\left[
+\left(\frac{d\vec a}{dt}\right)_n
+\right]^b
+=
+\dot a^b + S(\omega_{nb}^b)a^b
+$$
+
+where the dot denotes component differentiation in $\{b\}$ and
+$S(x)y = x \times y$.
+
+This is why extra velocity-product terms appear: the derivative is being taken
+in an inertial frame, but the coordinates rotate with the body.
 
 ### Translational Motion
 
-For the CG derivation, temporarily place the BODY origin at the CG. Newton's
-second law is an inertial-frame statement:
+Newton's second law is an inertial-frame momentum balance about the CG:
+
 $$
-m\left(\frac{d v_{ng}}{dt}\right)_n = f_g
+\vec f_g
+=
+\left(\frac{d\vec p_g}{dt}\right)_n,
+\qquad
+\vec p_g = m\vec v_{ng}
 $$
 
-Here $v_{ng}$ is the velocity of the CG relative to NED, and NED is being
-treated as inertial. It comes from the position relation
+Because the mass is constant,
+
+$$
+\vec f_g
+=
+m\left(\frac{d\vec v_{ng}}{dt}\right)_n
+$$
+
+The CG velocity can be related to the BODY origin velocity by the position
+identity
 
 $$
 \vec r_{ng} = \vec r_{nb} + \vec r_{bg}
 $$
 
-Taking the inertial derivative gives
+Here $\vec r_{bg}$ is the vector from the BODY origin to the CG; its BODY
+components are the $r_g^b$ used elsewhere in these notes.
+
+Taking an inertial derivative,
 
 $$
 \vec v_{ng}
-= \vec v_{nb} + \left(\frac{d\vec r_{bg}}{dt}\right)_n
+=
+\vec v_{nb}
++ \left(\frac{d\vec r_{bg}}{dt}\right)_n
 $$
 
-For a rigid body, $\vec r_{bg}$ is fixed in BODY coordinates, so
+For a rigid body, $\vec r_{bg}$ is fixed in BODY coordinates:
 
 $$
 \left(\frac{d\vec r_{bg}}{dt}\right)_b = 0
 $$
 
-However, the BODY frame rotates relative to NED. Applying the transport theorem,
+but it is not generally fixed in the inertial frame because the BODY frame
+rotates. Applying the transport theorem,
 
 $$
 \left(\frac{d\vec r_{bg}}{dt}\right)_n
 =
-\left(\frac{d\vec r_{bg}}{dt}\right)_b
-+ \vec\omega_{nb} \times \vec r_{bg}
-= \vec\omega_{nb} \times \vec r_{bg}
+\vec\omega_{nb} \times \vec r_{bg}
 $$
 
-Substituting this into the velocity relation,
+Therefore,
 
 $$
 \vec v_{ng}
-= \vec v_{nb} + \vec\omega_{nb} \times \vec r_{bg}
-$$
-
-Expressed in BODY coordinates,
-
-$$
-v_g^b = v_b^b + \omega_{nb}^b \times r_g^b
-= \nu_1 + S(\nu_2)r_g^b
-$$
-
-For the CG-origin derivation in this section, $r_g^b = 0$, so $v_g^b = \nu_1$.
-The nonzero-$r_g^b$ case returns later when the equations are transformed from
-CG to CO.
-
-
-
-Now write Newton's second law in BODY coordinates by expressing both sides in
-$\{b\}$:
-$$
-m\left[\left(\frac{d v_{ng}}{dt}\right)_n\right]^b = f_g^b
-$$
-
-The bracket means "take the inertial derivative first, then express the result
-in BODY coordinates." By the transport theorem,
-
-$$
-\left[\left(\frac{d v_{ng}}{dt}\right)_n\right]^b
 =
-\left(\frac{d v_g^b}{dt}\right)_b
-+ \omega_{nb}^b \times v_g^b
+\vec v_{nb}
++ \vec\omega_{nb} \times \vec r_{bg}
 $$
 
-Since the components are already written in BODY coordinates,
-$\left(d v_g^b/dt\right)_b$ is just the ordinary component derivative
-$\dot{v}_g^b$. Therefore,
+and, in BODY coordinates,
 
 $$
-m\left(\dot{v}_g^b + \omega_{nb}^b \times v_g^b\right) = f_g^b
+v_{ng}^b
+=
+v_{nb}^b + S(\omega_{nb}^b)r_g^b
 $$
 
-Using the skew-symmetric matrix $S(\cdot)$, where
-$S(a)b = a \times b$:
-$$
-m\left(\dot{v}_g^b + S(\omega_{nb}^b)v_g^b\right) = f_g^b
-$$
-
-When the BODY origin is at the CG, $v_g^b = \nu_1$ and
-$\omega_{nb}^b = \nu_2$, so
+For the CG equations in this section, the BODY origin is temporarily placed at
+the CG. Hence $r_g^b = 0$ and
 
 $$
-m(\dot{\nu}_1 + S(\nu_2)\nu_1) = f_g^b
+v_{ng}^b = v_{nb}^b = \nu_1
 $$
 
+Now express Newton's law in BODY coordinates. The important order is:
 
+1. take the inertial derivative,
+2. then express the result in $\{b\}$.
+
+Thus,
+
+$$
+f_g^b
+=
+m\left[
+\left(\frac{d\vec v_{ng}}{dt}\right)_n
+\right]^b
+$$
+
+Using the transport theorem again,
+
+$$
+\left[
+\left(\frac{d\vec v_{ng}}{dt}\right)_n
+\right]^b
+=
+\dot v_{ng}^b + S(\omega_{nb}^b)v_{ng}^b
+$$
+
+so
+
+$$
+m\left(\dot v_{ng}^b + S(\omega_{nb}^b)v_{ng}^b\right)
+=
+f_g^b
+$$
+
+At the CG, substitute $v_{ng}^b = \nu_1$ and
+$\omega_{nb}^b = \nu_2$:
+
+$$
+\boxed{
+m\left(\dot\nu_1 + S(\nu_2)\nu_1\right) = f_g^b
+}
+$$
+
+The term $m\dot\nu_1$ is the familiar mass times acceleration term. The term
+$mS(\nu_2)\nu_1 = m(\omega_{nb}^b \times v_{ng}^b)$ appears only because the
+linear velocity components are written in the rotating BODY frame.
 
 ### Rotational Motion
 
-The rotational equation starts from angular momentum about the CG:
+Euler's second axiom is the angular momentum balance about the CG:
+
+$$
+\vec m_g
+=
+\left(\frac{d\vec h_g}{dt}\right)_n
+$$
+
+For a rigid body, angular momentum about the CG is
 
 $$
 \vec h_g = I_g\vec\omega_{nb}
 $$
 
-Moment balance is also an inertial-frame statement:
-
-$$
-\left(\frac{d\vec h_g}{dt}\right)_n = \vec m_g
-$$
-
-Express both sides in BODY coordinates:
-
-$$
-\left[\left(\frac{d\vec h_g}{dt}\right)_n\right]^b = m_g^b
-$$
-
-The angular momentum components in BODY coordinates are
+In BODY coordinates,
 
 $$
 h_g^b = I_g^b\omega_{nb}^b
 $$
 
-Because the body is rigid and the inertia tensor is expressed in the BODY
-frame, $I_g^b$ is constant in BODY coordinates. Therefore
+The inertia dyadic $I_g^b$ is constant in BODY coordinates because the body is
+rigid and the axes are body-fixed. Therefore the BODY derivative is
 
 $$
 \left(\frac{d h_g^b}{dt}\right)_b
 =
-I_g^b\dot{\omega}_{nb}^b
+I_g^b\dot\omega_{nb}^b
 $$
 
-Applying the transport theorem to angular momentum gives
+Apply the transport theorem to angular momentum:
 
 $$
-\left[\left(\frac{d\vec h_g}{dt}\right)_n\right]^b
-= m_g^b \\
-=\left(\frac{d h_g^b}{dt}\right)_b
-+ \omega_{nb}^b \times h_g^b
+\left[
+\left(\frac{d\vec h_g}{dt}\right)_n
+\right]^b
+=
+\dot h_g^b + S(\omega_{nb}^b)h_g^b
 $$
 
-Substitute $h_g^b = I_g^b\omega_{nb}^b$:
+Substitute this into the moment balance:
 
 $$
-\implies I_g^b \dot{\omega}_{nb}^b
-+ \omega_{nb}^b \times (I_g^b\omega_{nb}^b)
+I_g^b\dot\omega_{nb}^b
++ S(\omega_{nb}^b)I_g^b\omega_{nb}^b
+=
+m_g^b
+$$
+
+Equivalently, using $a \times b = -b \times a$,
+
+$$
+I_g^b\dot\omega_{nb}^b
+- S(I_g^b\omega_{nb}^b)\omega_{nb}^b
 = m_g^b
 $$
 
-where each term has a distinct meaning:
-
-- $I_g^b \dot{\omega}_{nb}^b$: moment needed for angular acceleration about the CG.
-- $I_g^b\omega_{nb}^b$: angular momentum about the CG, expressed in BODY coordinates.
-- $\omega_{nb}^b \times (I_g^b\omega_{nb}^b)$: gyroscopic coupling caused by expressing angular momentum in the rotating BODY frame.
-- $m_g^b$: external moment about the CG, expressed in BODY coordinates.
-
-Using $S(a)b = a \times b$:
-
-$$
-\omega_{nb}^b \times (I_g^b\omega_{nb}^b)
-= S(\omega_{nb}^b)I_g^b\omega_{nb}^b
-$$
+This is the same sign convention used on the slide:
+$\omega \times (I_g\omega) = -(I_g\omega)\times\omega$.
 
 With $\nu_2 = \omega_{nb}^b = [p,q,r]^T$,
 
 $$
-\implies I_g^b\dot{\nu}_2 + S(\nu_2)I_g^b\nu_2 = m_g^b
+\boxed{
+I_g^b\dot\nu_2 + S(\nu_2)I_g^b\nu_2 = m_g^b
+}
 $$
 
-Term by term,
+Term by term:
 
-$$
-I_g^b\dot{\nu}_2
-=
-I_g^b
-\begin{bmatrix}
-\dot p \\ \dot q \\ \dot r
-\end{bmatrix}
-$$
+- $I_g^b\dot\nu_2$: moment needed for angular acceleration about the CG.
+- $I_g^b\nu_2$: angular momentum about the CG, expressed in BODY coordinates.
+- $S(\nu_2)I_g^b\nu_2 = \nu_2 \times (I_g^b\nu_2)$: gyroscopic coupling caused by expressing angular momentum in the rotating BODY frame.
+- $m_g^b$: external moment about the CG, expressed in BODY coordinates.
 
-is the angular-acceleration term. If
+If
 
 $$
 h_g^b = I_g^b\nu_2 =
@@ -326,7 +389,7 @@ h_x \\ h_y \\ h_z
 \end{bmatrix}
 $$
 
-then the gyroscopic term is
+then the gyroscopic term expands to
 
 $$
 S(\nu_2)I_g^b\nu_2
@@ -349,7 +412,7 @@ K_g \\ M_g \\ N_g
 \end{bmatrix}
 $$
 
-so the rotational equation says:
+so the rotational equation says
 
 $$
 \underbrace{I_g^b\dot{\nu}_2}_{\text{angular acceleration}}
@@ -370,7 +433,28 @@ I_x & -I_{xy} & -I_{xz} \\
 \end{bmatrix}
 $$
 
-The diagonal terms are moments of inertia. The off-diagonal terms are products of inertia.
+The diagonal terms are moments of inertia:
+
+$$
+I_x = \int_V (y^2 + z^2)\rho_m\,dV,
+\quad
+I_y = \int_V (x^2 + z^2)\rho_m\,dV,
+\quad
+I_z = \int_V (x^2 + y^2)\rho_m\,dV
+$$
+
+The off-diagonal terms are products of inertia:
+
+$$
+I_{xy} = \int_V xy\rho_m\,dV,
+\quad
+I_{xz} = \int_V xz\rho_m\,dV,
+\quad
+I_{yz} = \int_V yz\rho_m\,dV
+$$
+
+with $I_{xy}=I_{yx}$, $I_{xz}=I_{zx}$, and $I_{yz}=I_{zy}$. The minus signs in
+$I_g^b$ are the standard inertia-dyadic convention used in Fossen's slides.
 
 
 
@@ -488,6 +572,8 @@ $$
 The matrix form is useful because it packages the acceleration terms in
 $M_{RB}^{CG}\dot{\nu}$ and the velocity-product terms in $C_{RB}^{CG}(\nu)\nu$.
 
+
+
 ## Transforming from CG to CO
 
 ### Why Use the CO?
@@ -503,29 +589,121 @@ The same physical rigid body can be represented at the CO by transforming:
 
 ### System Transformation Matrix
 
-The CG-to-CO transformation uses the $H$ matrix:
+The $H$ matrix comes directly from the rigid-body velocity relation between
+the CO and CG. Let $r_g^b$ be the vector from the CO to the CG, expressed in
+BODY coordinates. The CG velocity is the CO velocity plus the velocity induced
+by rotation about the CO:
+
+$$
+v_{ng}^b
+=
+v_{nb}^b + \omega_{nb}^b \times r_g^b
+$$
+
+Using $a \times b = -b \times a$,
+
+$$
+\omega_{nb}^b \times r_g^b
+=
+-r_g^b \times \omega_{nb}^b
+=
+-S(r_g^b)\omega_{nb}^b
+=
+S^T(r_g^b)\omega_{nb}^b
+$$
+
+because $S^T(r_g^b) = -S(r_g^b)$. Therefore,
+
+$$
+v_{ng}^b
+=
+v_{nb}^b + S^T(r_g^b)\omega_{nb}^b
+$$
+
+The angular velocity is the same physical rotation no matter whether the
+reference point is the CO or CG:
+
+$$
+\omega_g^b = \omega_b^b = \omega_{nb}^b
+$$
+
+Stacking the linear and angular parts gives the slide's transformation:
+
+$$
+\begin{bmatrix}
+v_{ng}^b \\
+\omega_{nb}^b
+\end{bmatrix}
+=
+H(r_g^b)
+\begin{bmatrix}
+v_{nb}^b \\
+\omega_{nb}^b
+\end{bmatrix}
+$$
+
+where the system transformation matrix is
 
 $$
 H(r_g^b) =
+\begin{bmatrix}
+I_3 & S^T(r_g^b) \\
+0_{3 \times 3} & I_3
+\end{bmatrix}
+=
 \begin{bmatrix}
 I_3 & -S(r_g^b) \\
 0_{3 \times 3} & I_3
 \end{bmatrix}
 $$
 
-The CG velocity is related to the CO velocity by
+With the shorthand
 
 $$
 \nu_g = H(r_g^b)\nu_b
 $$
 
-This says:
+this means
 
 $$
 v_g^b = v_b^b + \omega_{nb}^b \times r_g^b,
 \qquad
 \omega_g^b = \omega_b^b
 $$
+
+The transpose that appears on the slide is
+
+$$
+H^T(r_g^b) =
+\begin{bmatrix}
+I_3 & 0_{3 \times 3} \\
+S(r_g^b) & I_3
+\end{bmatrix}
+$$
+
+It is used to transform generalized forces and the matrix equation itself:
+
+$$
+\tau_b = H^T(r_g^b)\tau_g,
+\qquad
+M_{RB} = H^T(r_g^b)M_{RB}^{CG}H(r_g^b),
+\qquad
+C_{RB} = H^T(r_g^b)C_{RB}^{CG}H(r_g^b)
+$$
+
+The force transformation is consistent with virtual power:
+
+$$
+\tau_g^T\nu_g
+=
+\tau_g^TH\nu_b
+=
+(H^T\tau_g)^T\nu_b
+=
+\tau_b^T\nu_b
+$$
+
+
 
 ### Parallel-Axis Theorem
 
@@ -535,7 +713,7 @@ $$
 I_b^b = I_g^b - mS(r_g^b)S(r_g^b)
 $$
 
-This is the compact matrix form of the [parallel-axis theorem](Parallel axis theorem).
+This is the compact matrix form of the [parallel-axis theorem](https://en.wikipedia.org/wiki/Parallel_axis_theorem#Moment_of_inertia_matrix).
 
 For $r_g^b = [x_g, y_g, z_g]^T$:
 
@@ -546,6 +724,8 @@ $$
 $$
 
 So moving the reference point away from the CG increases the apparent rotational inertia according to the distance from the CG.
+
+
 
 ## Newton-Euler Equations About the CO
 
@@ -614,6 +794,8 @@ The new terms come from the offset between CO and CG:
 - $\dot{\omega}\times r_g$: tangential acceleration of the CG due to angular acceleration.
 - $\omega\times(\omega\times r_g)$: centripetal acceleration of the CG due to rotation.
 
+
+
 ### Rotational Motion About the CO
 
 The rotational equation about the CO can be written compactly as the lower three rows of
@@ -630,6 +812,90 @@ In vector form, the CO moment balance includes:
 
 The important modeling lesson is that the moment equation about CO is not simply the CG moment equation with $I_g$ renamed. The offset introduces translation-rotation coupling in both $M_{RB}$ and $C_{RB}$.
 
+
+
+### Jacobi Identity in the CO Coriolis Matrix
+
+Slide 13 highlights a simplification in the lower-right block of the CO Coriolis and centripetal matrix. Before applying the parallel-axis theorem, the matrix obtained from $H^TC_{RB}^{CG}H$ contains
+
+$$
+C_{RB} =
+\begin{bmatrix}
+mS(\omega) & -mS(\omega)S(r_g) \\
+mS(r_g)S(\omega) &
+-mS(r_g)S(\omega)S(r_g) - S(I_g\omega)
+\end{bmatrix}
+$$
+
+where $r_g = r_g^b$ and $\omega = \omega_{nb}^b$. The highlighted term is
+
+$$
+C_{RB}^{22}
+=
+-mS(r_g)S(\omega)S(r_g) - S(I_g\omega)
+$$
+
+At first glance this does not look like the clean gyroscopic term $-S(I_b\omega)$, because it contains the extra offset product $S(r_g)S(\omega)S(r_g)$. The slide uses the Jacobi identity to show that this extra product is exactly the correction needed to replace $I_g$ by the CO inertia $I_b$ after multiplication by $\omega$.
+
+The vector Jacobi identity is
+
+$$
+a \times (b \times c)
++ b \times (c \times a)
++ c \times (a \times b)
+= 0
+$$
+
+Choose $c = a \times b$. Then
+
+$$
+a \times (b \times (a \times b))
+=
+-(a \times (a \times b)) \times b
+$$
+
+In skew-matrix notation this is
+
+$$
+S(a)S(b)S(a)b
+=
+-S(S^2(a)b)b
+$$
+
+Now set $a = r_g$ and $b = \omega$:
+
+$$
+-S(r_g)S(\omega)S(r_g)\omega
+=
+S(S^2(r_g)\omega)\omega
+$$
+
+Therefore, the highlighted block multiplied by $\omega$ becomes
+
+$$
+\begin{aligned}
+C_{RB}^{22}\omega
+&=
+\left[-mS(r_g)S(\omega)S(r_g) - S(I_g\omega)\right]\omega \\
+&=
+mS(S^2(r_g)\omega)\omega - S(I_g\omega)\omega \\
+&=
+-S\left((I_g - mS^2(r_g))\omega\right)\omega \\
+&=
+-S(I_b\omega)\omega
+\end{aligned}
+$$
+
+because the parallel-axis theorem gives
+
+$$
+I_b = I_g - mS^2(r_g)
+$$
+
+So slide 13 is not adding a new physical force. It is proving that the ugly offset-dependent lower-right block of $C_{RB}$ is equivalent, in the moment equation, to the familiar gyroscopic term computed with the inertia tensor about the CO.
+
+
+
 ## Rigid-Body Matrix-Vector Model
 
 ### Main Equation
@@ -642,12 +908,13 @@ $$
 
 Combined with Chapter 2 kinematics:
 
+> map BODY velocities into NED position and attitude rates
+
 $$
 \dot{\eta} = J(\eta)\nu
 $$
 
 the rigid-body state model is
-
 $$
 \begin{aligned}
 \dot{\eta} &= J(\eta)\nu, \\
@@ -665,29 +932,98 @@ $$
 
 where Chapter 3 contributes the rigid-body parts $M_{RB}$ and $C_{RB}$.
 
+
+
 ### Coriolis and Centripetal Matrix from a System Inertia Matrix
 
-Let a constant 6-by-6 inertia matrix be partitioned as
+> **Source and scope.** This is Theorem 3.2 on slide 19 of the Chapter 3 lecture notes. 
+>
+> The slide does not prove the theorem; it refers the proof to
+> Sagatun and Fossen (1991), *Lagrangian Formulation of Underwater Vehicles' Dynamics*. 
+>
+> The result below is therefore a cited general theorem, not a consequence proved by the preceding CG-to-CO calculations. A short momentum-balance derivation is included here to make the formula intelligible.
+
+Let a constant, symmetric positive-definite 6-by-6 system inertia matrix be partitioned as
 
 $$
-M =
+M=M^T =
 \begin{bmatrix}
 M_{11} & M_{12} \\
 M_{21} & M_{22}
 \end{bmatrix},
 \qquad
-M_{21} = M_{12}^T
+M_{21} = M_{12}^T,
+\qquad M>0
 $$
 
-Define
+Partition the generalized velocity into translational and angular parts,
 
 $$
+\nu =
+\begin{bmatrix}
+\nu_1 \\
+\nu_2
+\end{bmatrix},
+\qquad
+\nu_1=[u,v,w]^T,
+\qquad
+\nu_2=[p,q,r]^T
+$$
+
+Then the generalized momentum is
+
+$$
+M\nu=
+\begin{bmatrix}
+a\\
+b
+\end{bmatrix},
+\qquad
 a = M_{11}\nu_1 + M_{12}\nu_2,
 \qquad
 b = M_{21}\nu_1 + M_{22}\nu_2
 $$
 
-One skew-symmetric Coriolis-centripetal parameterization is
+Thus $a$ and $b$ are not arbitrary substitutions: they are respectively the linear-momentum and angular-momentum blocks expressed in BODY coordinates.
+
+#### Short derivation
+
+For momenta expressed in the rotating BODY frame, the Newton-Euler momentum balance has the form
+
+$$
+\begin{aligned}
+\dot a + \nu_2\times a &= f,\\
+\dot b + \nu_1\times a + \nu_2\times b &= \tau.
+\end{aligned}
+$$
+
+Because $M$ is constant, $[\dot a^T,\dot b^T]^T=M\dot\nu$. The remaining velocity-product terms must therefore equal $C(\nu)\nu$. Using $S(x)y=x\times y$ and $-S(x)y=y\times x$ gives
+
+$$
+\begin{aligned}
+\begin{bmatrix}
+\nu_2\times a\\
+\nu_1\times a+\nu_2\times b
+\end{bmatrix}
+&=
+\begin{bmatrix}
+-S(a)\nu_2\\
+-S(a)\nu_1-S(b)\nu_2
+\end{bmatrix}\\
+&=
+\underbrace{
+\begin{bmatrix}
+0_{3 \times 3} & -S(a) \\
+-S(a) & -S(b)
+\end{bmatrix}}_{C(\nu)}
+\begin{bmatrix}
+\nu_1\\
+\nu_2
+\end{bmatrix}.
+\end{aligned}
+$$
+
+Hence one skew-symmetric Coriolis-centripetal parameterization is
 
 $$
 C(\nu) =
@@ -703,7 +1039,64 @@ $$
 C(\nu) = -C^T(\nu)
 $$
 
-For rigid-body dynamics, use $M = M_{RB}$.
+The parameterization is not unique: the equations determine the product $C(\nu)\nu$, so another matrix giving the same product is dynamically
+equivalent. The form above is useful because skew-symmetry is explicit.
+
+For rigid-body dynamics, set $M=M_{RB}$. The next Lagrangian parameterization is obtained by substituting the rigid-body blocks into this theorem.
+
+**Reference:** S. I. Sagatun and T. I. Fossen (1991), "Lagrangian Formulation of Underwater Vehicles' Dynamics," *IEEE International Conference on Systems,
+Man, and Cybernetics*, pp. 1029-1034.
+
+
+
+### Lagrangian Parameterization: Applying Theorem 3.2
+
+This is not a separate result. It is Theorem 3.2 evaluated with the rigid-body inertia matrix
+
+$$
+M_{RB}=
+\begin{bmatrix}
+mI_3 & -mS(r_g^b)\\
+mS(r_g^b) & I_b^b
+\end{bmatrix}.
+$$
+
+Writing $v=\nu_1$, $\omega=\nu_2$, and $r_g=r_g^b$ for compactness, the two momentum blocks in the theorem become
+
+$$
+\begin{aligned}
+a
+&=mv-mS(r_g)\omega
+=mv+mS(\omega)r_g,\\
+b
+&=mS(r_g)v+I_b^b\omega
+=-mS(v)r_g+I_b^b\omega.
+\end{aligned}
+$$
+
+Substitute these expressions into $C(\nu)=[\begin{smallmatrix}0&-S(a)\\-S(a)&-S(b)\end{smallmatrix}]$ and use the Jacobi identity together with $S(x)x=0$. 
+
+After collecting dynamically equivalent terms, the result is the **Lagrangian parameterization** shown on slide 21:
+$$
+C_{RB}^{L}(\nu)=
+\begin{bmatrix}
+0_{3\times3}
+&-mS(v)-mS(\omega)S(r_g)\\
+-mS(v)+mS(r_g)S(\omega)
+&-S(I_b^b\omega)
+\end{bmatrix}.
+$$
+
+It is skew-symmetric because
+
+$$
+\left[-mS(v)-mS(\omega)S(r_g)\right]^T
+=mS(v)-mS(r_g)S(\omega),
+$$
+
+which is the negative of the lower-left block. Thus the theorem supplies the general construction, while substituting the four blocks of $M_{RB}$ supplies this rigid-body-specific matrix.
+
+
 
 ### Energy Property
 
@@ -735,9 +1128,49 @@ $$
 
 This property is heavily used in nonlinear control and observer design.
 
+
+
 ### Linear-Velocity-Independent Parameterization
 
-For marine craft in currents, it is useful to choose a $C_{RB}$ expression that depends only on angular velocity $\nu_2$, not on the linear velocity $\nu_1$:
+The Lagrangian matrix above still contains $v=\nu_1$. Slide 23 obtains an equivalent matrix with no $v$ in its entries. The key is that the dynamics
+depend on the product $C_{RB}(\nu)\nu$, not on the individual blocks of $C_{RB}$.
+
+Consider the upper block row of the Lagrangian product:
+
+$$
+\begin{aligned}
+\left[-mS(v)-mS(\omega)S(r_g)\right]\omega
+&=mS(\omega)v-mS(\omega)S(r_g)\omega\\
+&=
+\begin{bmatrix}
+mS(\omega)&-mS(\omega)S(r_g)
+\end{bmatrix}
+\begin{bmatrix}
+v\\
+\omega
+\end{bmatrix},
+\end{aligned}
+$$
+
+where the decisive cross-product identity is
+
+$$
+-S(v)\omega=S(\omega)v.
+$$
+
+Therefore the $-mS(v)$ term can be moved from block $C_{12}$ to block $C_{11}$ as $mS(\omega)$. In the lower block row, the remaining
+$-mS(v)$ term contributes nothing because
+$$
+-mS(v)v=0.
+$$
+
+It can therefore be deleted from $C_{21}$. The other blocks are unchanged.
+Consequently,
+$$
+C_{RB}^{L}(\nu)\nu=C_{RB}^{\nu_2}(\nu)\nu,
+$$
+
+even though the two matrices are not equal entry by entry. The resulting linear-velocity-independent parameterization is
 
 $$
 C_{RB}^{\nu_2}(\nu) =
@@ -747,6 +1180,8 @@ mS(r_g^b)S(\nu_2) & -S(I_b^b\nu_2)
 \end{bmatrix}
 $$
 
+This removes linear velocity from the matrix without changing the Coriolis-centripetal force vector. The new matrix also remains skew-symmetric.
+
 This is the preferred representation when using relative velocity
 
 $$
@@ -755,75 +1190,132 @@ $$
 
 for irrotational ocean currents. Since currents contribute linear velocity but not angular velocity, using a $C_{RB}$ that does not depend on $\nu_1$ avoids injecting current velocity into rigid-body Coriolis terms incorrectly.
 
-## Surface-Ship 3-DOF Reduction
 
-For a surface vessel constrained to horizontal-plane motion:
+
+
+
+### What "Linearized 6-DOF" Means
+
+**Linearized** means replacing the nonlinear equations by their first-order Taylor approximation near a chosen nominal motion, also called an operating
+point. It does **not** mean reducing the number of degrees of freedom: all six velocity perturbations remain in the model.
+
+#### Why Linearize?
+
+The rigid-body kinetics in this chapter are nonlinear mainly because $C_{RB}(\nu)\nu$ contains products of velocities, such as $ur$, $uq$, $pq$, and $r^2$. 
+
+A linear model near a specified motion is useful because it permits:
+
+- eigenvalue and local stability analysis;
+- transfer-function and frequency-response analysis;
+- classical control design and tuning;
+- systematic linear methods such as pole placement, LQR, and Kalman filters;
+- easier identification of coupled modes such as sway-yaw and roll-yaw;
+- simpler and faster simulation or real-time implementation.
+
+The approximation retains the effect of the nominal motion while removing
+products of small deviations. For example, near constant surge speed $U$,
 
 $$
-\eta =
-\begin{bmatrix}
-x & y & \psi
-\end{bmatrix}^T,
+u=U+\delta u,
 \qquad
-\nu =
+r=\delta r,
+$$
+
+so
+
+$$
+ur=(U+\delta u)\delta r
+=U\delta r+\delta u\,\delta r
+\approx U\delta r.
+$$
+
+The term $U\delta r$ is first order and is retained because $U$ is a fixed nominal value. The product $\delta u\,\delta r$ is second order in the small perturbations and is discarded. The resulting equations are linear in the perturbation variables even though they still capture how forward speed affects the local dynamics.
+
+Linearization is therefore a trade-off: it gives a much simpler model for analysis and controller design, but only near the selected operating point.
+The nonlinear model should be used for large attitude changes, aggressive maneuvers, large velocity deviations, or operation over a wide speed range.
+
+On slide 26, the nominal motion is steady surge at constant forward speed
+$U$:
+
+$$
+\nu_0=
 \begin{bmatrix}
-u & v & r
-\end{bmatrix}^T,
+U&0&0&0&0&0
+\end{bmatrix}^T.
+$$
+
+Write the actual velocity and load as a nominal value plus a small perturbation,
+
+$$
+\nu=\nu_0+\delta\nu,
 \qquad
-\tau =
+\tau_{RB}=\tau_{RB,0}+\delta\tau_{RB}.
+$$
+
+Define the nonlinear Coriolis-centripetal force vector
+
+$$
+h(\nu)=C_{RB}(\nu)\nu.
+$$
+
+Its first-order Taylor expansion is
+
+$$
+h(\nu_0+\delta\nu)
+\approx
+h(\nu_0)
++
+\left.\frac{\partial h}{\partial\nu}\right|_{\nu_0}\delta\nu.
+$$
+
+After subtracting the nominal equation, the perturbation dynamics are
+
+$$
+M_{RB}\,\delta\dot\nu
++C_{RB}^*\delta\nu
+=\delta\tau_{RB},
+\qquad
+C_{RB}^*
+:=
+\left.\frac{\partial[C_{RB}(\nu)\nu]}{\partial\nu}\right|_{\nu_0}
+$$
+
+The slide omits the $\delta$ symbols and reuses $\nu$ and $\tau_{RB}$ for the perturbation variables. This is common shorthand, but the displayed
+linearized equation is a model of deviations from $\nu_0$, not the original absolute variables.
+
+For this particular operating point, slide 26 writes the constant linearized matrix as
+
+$$
+C_{RB}^*=UM_{RB}L,
+$$
+
+where the only nonzero entries of $L$ are
+
+$$
+L_{2,6}=1,
+\qquad
+L_{3,5}=-1.
+$$
+
+Hence
+
+$$
+L\,\delta\nu=
 \begin{bmatrix}
-X & Y & N
-\end{bmatrix}^T
+0&\delta r&-\delta q&0&0&0
+\end{bmatrix}^T.
 $$
 
-Assume the CO lies on the centerline and
+Terms such as $U\,\delta r$ and $U\,\delta q$ remain because $U$ is the fixed nominal speed, not a small perturbation. Products of two perturbations, such
+as $\delta u\,\delta r$ or $\delta q\,\delta r$, are second order and are discarded.
 
-$$
-r_g^b =
-\begin{bmatrix}
-x_g & 0 & 0
-\end{bmatrix}^T
-$$
+> **Important:** $C_{RB}^*$ is the Jacobian of the complete vector $C_{RB}(\nu)\nu$; it is not generally $C_{RB}(\nu_0)$. Also, $C_{RB}^*$ need not be skew-symmetric. Slides 26-27 explicitly note that linearization destroys that matrix property.
 
-The rigid-body mass matrix reduces to
+The approximation is accurate only for sufficiently small deviations around the chosen forward speed $U$. A substantially different speed or operating
+condition requires a new linearization or use of the nonlinear model.
 
-$$
-M_{RB}^{3DOF} =
-\begin{bmatrix}
-m & 0 & 0 \\
-0 & m & mx_g \\
-0 & mx_g & I_z
-\end{bmatrix}
-$$
 
-The linear-velocity-independent rigid-body Coriolis matrix becomes
 
-$$
-C_{RB}^{3DOF}(\nu) =
-\begin{bmatrix}
-0 & -mr & -mx_g r \\
-mr & 0 & 0 \\
-mx_g r & 0 & 0
-\end{bmatrix}
-$$
-
-Therefore
-
-$$
-M_{RB}^{3DOF}\dot{\nu} + C_{RB}^{3DOF}(\nu)\nu = \tau_{RB}
-$$
-
-expands to
-
-$$
-\begin{aligned}
-m(\dot{u} - vr - x_g r^2) &= X, \\
-m(\dot{v} + ur + x_g\dot{r}) &= Y, \\
-I_z\dot{r} + mx_g(\dot{v} + ur) &= N.
-\end{aligned}
-$$
-
-These are the rigid-body parts only. In practical maneuvering models, added mass, damping, restoring, wind, waves, current, and actuator forces are added around this core.
 
 ## How to Read the Terms
 
